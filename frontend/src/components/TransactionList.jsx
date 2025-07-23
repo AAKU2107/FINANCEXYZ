@@ -162,13 +162,13 @@ function TransactionItem({ item, deleteTransaction, editTransaction }) {
                   ${item.amount.toLocaleString()}
                 </span>
                 <span className="sub-text-small" style={{ color: "#666" }}>
-                  {new Date(item._id).toLocaleDateString("en-US", {
+                  {new Date(item.createdAt?.toDate?.() || item.date || Date.now()).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
                   })}
                   {" • "}
-                  {new Date(item._id).toLocaleTimeString("en-US", {
+                  {new Date(item.createdAt?.toDate?.() || item.date || Date.now()).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "numeric",
                     hour12: true,
