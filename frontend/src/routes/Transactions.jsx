@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import TransactionForm from "../components/TransactionForm";
 import TransactionList from "../components/TransactionList";
+import.meta.env.VITE_API_URL;
 
 function Transactions({
   transactions,
