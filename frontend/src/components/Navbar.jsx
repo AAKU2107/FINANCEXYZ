@@ -1,8 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { logoutUser } from "../../firebase";
 
-const Navbar = ({ user }) => {
+const Navbar = () => {
   const location = useLocation();
 
   return (
@@ -38,13 +37,6 @@ const Navbar = ({ user }) => {
         >
           <Link to="/dashboard">Dashboard</Link>
         </li>
-        {user && (
-          <li className="navbar-item">
-            <button onClick={logoutUser} style={{ color: "#ffae00", background: "none", border: "none", cursor: "pointer" }}>
-              Logout
-            </button>
-          </li>
-        )}
       </ul>
     </nav>
   );

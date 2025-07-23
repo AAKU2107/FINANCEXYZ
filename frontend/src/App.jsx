@@ -1,27 +1,15 @@
 import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
-import { auth, getTransactions, addTransaction, deleteTransaction, editTransaction } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
 
 import Navbar from "./components/Navbar";
 import Dashboard from "./routes/Dashboard";
 import Home from "./routes/Home";
 import Transactions from "./routes/Transactions";
-import Login from "./components/Login";
 
 function App() {
-  const [user, setUser] = useState(null);
   const [transactions, setTransactions] = useState(
     JSON.parse(localStorage.getItem("transactions")) || []
   );
-  
-  // Check authentication state
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
 
   // Using localStorage to persist transactions
 
@@ -43,85 +31,86 @@ function App() {
   //   );
   // };\
 
-  // Using transaction functions from firebase.js
+  // Using fetch to get transactions from the backend
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      if (user) {
-        try {
-          const data = await getTransactions(user.uid);
-          setTransactions(data);
-        } catch (err) {
-          console.error("Error fetching transactions:", err);
-        }
-      }
-    };
-    
-    if (user) {
-      fetchTransactions();
-    }
-  }, [user]);
+    fetch("https://financexyz.onrender.com")
+      .then((res) => res.json())
+      .then((data) => {
+        setTransactions(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching transactions:", err);
+      });
+  }, []);
 
-  const handleAddTransaction = async (tx) => {
-    if (!user) return;
+  const addTransaction = async (tx) => {
     try {
-      const newTx = await addTransaction(user.uid, tx);
+      const res = await fetch("https://financexyz.onrender.com", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tx),
+      });
+
+      const newTx = await res.json();
       setTransactions((prev) => [newTx, ...prev]);
     } catch (err) {
       console.error("Error adding transaction:", err);
     }
   };
 
-  const handleDeleteTransaction = async (_id) => {
-    if (!user) return;
+  const deleteTransaction = async (_id) => {
     try {
-      await deleteTransaction(user.uid, _id);
+      await fetch(`https://financexyz.onrender.com/${_id}`, {
+        method: "DELETE",
+      });
+
       setTransactions((prev) => prev.filter((t) => t._id !== _id));
     } catch (err) {
       console.error("Error deleting transaction:", err);
     }
   };
 
-  const handleEditTransaction = async (_id, tx) => {
-    if (!user) return;
+  const editTransaction = async (_id, tx) => {
     try {
-      await editTransaction(user.uid, _id, tx);
+      await fetch(`https://financexyz.onrender.com/${_id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tx),
+      });
+
       setTransactions((prev) =>
         prev.map((t) => (t._id !== _id ? t : { ...t, ...tx }))
       );
     } catch (err) {
-      console.error("Error updating transaction:", err);
+      console.error("Error deleting transaction:", err);
     }
   };
 
   return (
     <div>
-      <Navbar user={user} />
+      <Navbar />
       <h1 className="main-heading">Personal Finance Tracker</h1>
 
       <div>
-        {!user ? (
-          <Login />
-        ) : (
-          <Routes>
-            <Route path="/" element={<Home transactions={transactions} />} />
-            <Route
-              path="/transactions"
-              element={
-                <Transactions
-                  transactions={transactions}
-                  addTransaction={handleAddTransaction}
-                  deleteTransaction={handleDeleteTransaction}
-                  editTransaction={handleEditTransaction}
-                />
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={<Dashboard transactions={transactions} />}
-            />
-          </Routes>
-        )}
+        <Routes>
+          <Route path="/" element={<Home transactions={transactions} />} />
+          <Route
+            path="/transactions"
+            element={
+              <Transactions
+                transactions={transactions}
+                addTransaction={addTransaction}
+                deleteTransaction={deleteTransaction}
+                editTransaction={editTransaction}
+              />
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={<Dashboard transactions={transactions} />}
+          />
+        </Routes>
       </div>
     </div>
   );

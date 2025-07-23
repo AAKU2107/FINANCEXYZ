@@ -24,11 +24,11 @@ function TransactionForm({ addTransaction }) {
 
     if (amount && description) {
       addTransaction({
+        id: Date.now(),
         amount: parseFloat(amount),
         description,
         type,
         category,
-        date: new Date(),
       });
       setAmount(0);
       setDescription("");
